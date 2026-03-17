@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Texoma Lakehouse Mystery</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --card: rgba(11, 26, 46, 0.92);
+      --card-2: rgba(16, 37, 63, 0.96);
+      --text: #f4efe4;
+      --muted: #cfbf9e;
+      --accent: #d9a25f;
+      --accent-2: #5ba2e6;
+      --border: rgba(232, 198, 149, 0.28);
+      --shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+      --success: #b8e6b8;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top, rgba(58, 110, 172, 0.28), transparent 32%),
+        linear-gradient(180deg, #0a1730 0%, #07111e 55%, #050b15 100%);
+    }
+
+    body { padding: 24px 14px 48px; }
+
+    .app-shell { max-width: 840px; margin: 0 auto; }
+
+    .card {
+      background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 28px 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .hidden { display: none; }
+
+    .logo {
+      width: min(100%, 340px);
+      display: block;
+      margin: 0 auto 16px;
+      border-radius: 22px;
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-align: center;
+      margin: 4px 0 8px;
+      font-size: 0.78rem;
+    }
+
+    h1, h2, h3 {
+      text-align: center;
+      margin: 0 0 16px;
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 6vw, 3.4rem);
+      line-height: 1.05;
+    }
+
+    h2 {
+      font-size: clamp(1.5rem, 4vw, 2.2rem);
+    }
+
+    p, li, blockquote {
+      line-height: 1.65;
+      font-size: 1.04rem;
+    }
+
+    .story {
+      max-width: 660px;
+      margin: 10px auto 22px;
+    }
+
+    blockquote {
+      margin: 14px 0 0;
+      padding: 16px 18px;
+      border-left: 4px solid var(--accent);
+      background: rgba(255,255,255,0.04);
+      border-radius: 12px;
+      font-style: italic;
+    }
+
+    .agent-grid {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .agent-btn, .primary-btn, .secondary-btn {
+      appearance: none;
+      border: none;
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-size: 1rem;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .agent-btn {
+      background: linear-gradient(180deg, #16365d 0%, #0e2846 100%);
+      color: var(--text);
+      border: 1px solid rgba(91, 162, 230, 0.28);
+      font-weight: 700;
+    }
+
+    .primary-btn {
+      background: linear-gradient(180deg, #c8914f 0%, #9f6c30 100%);
+      color: #fff8eb;
+      font-weight: 700;
+    }
+
+    .secondary-btn {
+      background: transparent;
+      color: var(--muted);
+      text-decoration: underline;
+      padding: 8px 12px;
+      display: block;
+      margin: 12px auto 0;
+    }
+
+    .code-form {
+      display: grid;
+      gap: 12px;
+      max-width: 440px;
+      margin: 20px auto 12px;
+    }
+
+    .code-form input {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid rgba(217, 162, 95, 0.35);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      padding: 15px 16px;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-family: inherit;
+    }
+
+    .status {
+      text-align: center;
+      min-height: 1.5em;
+      color: #ffd79a;
+    }
+
+    .success { color: var(--success); }
+
+    .progress-wrap {
+      max-width: 620px;
+      margin: 0 auto 20px;
+    }
+
+    .progress-label {
+      text-align: center;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .progress-bar {
+      height: 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #d9a25f 0%, #5ba2e6 100%);
+      transition: width 0.35s ease;
+    }
+
+    .clue-box, .puzzle-box {
+      max-width: 620px;
+      margin: 22px auto;
+      padding: 20px 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(232, 198, 149, 0.2);
+    }
+
+    .clue-box p, .puzzle-box p {
+      font-size: 1.18rem;
+      line-height: 1.7;
+      text-align: center;
+      margin: 0 0 10px;
+    }
+
+    .clue-box p:last-child, .puzzle-box p:last-child { margin-bottom: 0; }
+
+    .helper, .round-note {
+      text-align: center;
+      color: var(--muted);
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .round-note { margin-top: 14px; }
+
+    .victory {
+      text-align: center;
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    .victory p { font-size: 1.15rem; }
+
+    .three-code {
+      display: grid;
+      gap: 10px;
+      max-width: 500px;
+      margin: 20px auto 10px;
+    }
+
+    .three-code input {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid rgba(217, 162, 95, 0.35);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      padding: 15px 16px;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+    }
+
+    @media (min-width: 700px) {
+      .card { padding: 34px 34px 38px; }
+      .agent-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <section class="card" id="introView">
+      <img class="logo" src="./texoma-mystery-logo.png" alt="Texoma Lakehouse Mystery logo" />
+      <p class="eyebrow">Case File: 1886</p>
+      <h1>The Texoma Lakehouse Mystery</h1>
+
+      <div class="story">
+        <p>Late last night something strange happened at the Rogers Lakehouse.</p>
+        <p>A container known as <strong>The Texoma Artifact</strong> has disappeared.</p>
+        <p>The thief left only one message:</p>
+        <blockquote>
+          Follow the clues hidden across the property. But beware — no single investigator can solve this case alone.
+        </blockquote>
+      </div>
+
+      <h2>Assigned Investigators</h2>
+      <div class="agent-grid">
+        <button class="agent-btn" data-agent="logan"><strong>Agent Logan Rogan</strong></button>
+        <button class="agent-btn" data-agent="carli"><strong>Agent Carli Jo Jo</strong></button>
+        <button class="agent-btn" data-agent="gemmy"><strong>Agent Gemmy</strong></button>
+      </div>
+    </section>
+
+    <section class="card hidden" id="lockView">
+      <img class="logo" src="./texoma-mystery-logo.png" alt="Texoma Lakehouse Mystery logo" style="max-width:220px" />
+      <p class="eyebrow">Mission Locked</p>
+      <h2 id="lockAgentName"></h2>
+      <p class="helper">You have been assigned to the case, but the investigation has not yet been authorized.</p>
+      <p class="helper">Enter the Start Code to receive your first clue.</p>
+
+      <form class="code-form" id="startForm">
+        <label class="sr-only" for="startCode">Enter start code</label>
+        <input id="startCode" type="text" autocomplete="off" placeholder="ENTER START CODE" />
+        <button class="primary-btn" type="submit">Unlock Mission</button>
+      </form>
+
+      <p class="status" id="startStatus"></p>
+      <button class="secondary-btn" id="backToIntro">Choose a different investigator</button>
+    </section>
+
+    <section class="card hidden" id="roundView">
+      <p class="eyebrow" id="roundEyebrow">Round 1</p>
+      <div class="progress-wrap">
+        <div class="progress-label" id="progressLabel">Round 1 of 11</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+
+      <h2 id="roundAgentName"></h2>
+      <p class="helper" id="roundHelper">Share your clue with the group and solve the location together.</p>
+
+      <div id="standardRound">
+        <div class="clue-box">
+          <p id="clueLine1"></p>
+          <p id="clueLine2"></p>
+        </div>
+
+        <form class="code-form" id="roundCodeForm">
+          <label class="sr-only" for="roundCodeInput">Enter evidence code</label>
+          <input id="roundCodeInput" type="text" autocomplete="off" placeholder="ENTER EVIDENCE CODE" />
+          <button class="primary-btn" type="submit">Submit Code</button>
+        </form>
+      </div>
+
+      <div id="numberPuzzleRound" class="hidden">
+        <div class="puzzle-box">
+          <p id="puzzleText"></p>
+        </div>
+
+        <p class="round-note">Enter the numbers in <strong>alphabetical order of the agents</strong>.</p>
+
+        <form id="numberPuzzleForm">
+          <div class="three-code">
+            <input id="num1" type="text" autocomplete="off" placeholder="FIRST NUMBER" />
+            <input id="num2" type="text" autocomplete="off" placeholder="SECOND NUMBER" />
+            <input id="num3" type="text" autocomplete="off" placeholder="THIRD NUMBER" />
+          </div>
+          <button class="primary-btn" type="submit" style="display:block;margin:0 auto;">Submit Numbers</button>
+        </form>
+      </div>
+
+      <p class="status" id="roundStatus"></p>
+      <button class="secondary-btn" id="resetMission">Back to intro</button>
+    </section>
+
+    <section class="card hidden" id="victoryView">
+      <img class="logo" src="./texoma-mystery-logo.png" alt="Texoma Lakehouse Mystery logo" style="max-width:220px" />
+      <p class="eyebrow">Case Closed</p>
+      <div class="victory">
+        <h1>Mission Complete</h1>
+        <p><strong>Agents Logan Rogan, Carli Jo Jo, and Gemmy</strong> have solved <strong>The Texoma Lakehouse Mystery</strong>.</p>
+        <p>You solved the clues.</p>
+        <p>You cracked the codes.</p>
+        <p>You found the treasure.</p>
+        <p class="success"><strong>CASE CLOSED.</strong></p>
+      </div>
+      <button class="secondary-btn" id="playAgain">Start Over</button>
+    </section>
+  </main>
+
+  <script>
+    const START_CODE = "BEGIN";
+
+    const rounds = [
+      {
+        type: "clue",
+        title: "Round 1",
+        code: "1886",
+        clueText: {
+          logan: [
+            "Where spinning blades greet wind and sky,",
+            "A tall metal tower stands nearby,"
+          ],
+          carli: [
+            "A tall metal tower stands nearby,",
+            "The number of this house waits outside."
+          ],
+          gemmy: [
+            "The number of this house waits outside.",
+            "Where spinning blades greet wind and sky,"
+          ]
+        }
+      },
+      {
+        type: "clue",
+        title: "Round 2",
+        code: "KYLER",
+        clueText: {
+          logan: [
+            "A scrambling quarterback shares this name,",
+            "Look just beyond this lakehouse door."
+          ],
+          carli: [
+            "Though now the Vikings claim his fame,",
+            "Look just beyond this lakehouse door."
+          ],
+          gemmy: [
+            "A scrambling quarterback shares this name,",
+            "Though now the Vikings claim his fame."
+          ]
+        }
+      },
+      {
+        type: "clue",
+        title: "Round 3",
+        code: "SMOKE",
+        clueText: {
+          logan: [
+            "Not where the marshmallows slowly roast,",
+            "Three iron chefs send smoke through the air."
+          ],
+          carli: [
+            "But where cowboys cook their meat the most,",
+            "Three iron chefs send smoke through the air."
+          ],
+          gemmy: [
+            "Not where the marshmallows slowly roast,",
+            "But where cowboys cook their meat the most,"
+          ]
+        }
+      },
+      {
+        type: "clue",
+        title: "Round 4",
+        code: "FLAG",
+        clueText: {
+          logan: [
+            "Where ping pong battles fill the room,",
+            "A giant flag hangs overhead."
+          ],
+          carli: [
+            "Cold drinks rest in steel and gloom,",
+            "A giant flag hangs overhead."
+          ],
+          gemmy: [
+            "Where ping pong battles fill the room,",
+            "Cold drinks rest in steel and gloom,"
+          ]
+        }
+      },
+      {
+        type: "clue",
+        title: "Round 5",
+        code: "CHEVY",
+        clueText: {
+          logan: [
+            "Two mighty vehicles guard this land,",
+            "Seek the ride the cowboy chose."
+          ],
+          carli: [
+            "One rides in black with a Double-T brand,",
+            "Seek the ride the cowboy chose."
+          ],
+          gemmy: [
+            "Two mighty vehicles guard this land,",
+            "One rides in black with a Double-T brand,"
+          ]
+        }
+      },
+      {
+        type: "clue",
+        code: "BLOOM",
+        title: "Round 6",
+        clueText: {
+          logan: [
+            "This clue won’t roar with engine sound,",
+            "Quiet colors rise from the ground."
+          ],
+          carli: [
+            "Behind a gate where blooms are found,",
+            "Quiet colors rise from the ground."
+          ],
+          gemmy: [
+            "This clue won’t roar with engine sound,",
+            "Behind a gate where blooms are found,"
+          ]
+        }
+      },
+      {
+        type: "puzzle",
+        title: "Round 7",
+        code: "2019|20|16",
+        clueText: {
+          logan: "🎵<br><br>When the day is done<br>And those neon lights call you home<br>You'll be begging for a savior<br>To let you save him<br>The savage times of ____ so",
+          carli: "🎵<br><br>“Let me set you the scene — November circa ____.”",
+          gemmy: "<strong>Molly’s Candles</strong>"
+        }
+      },
+      {
+        type: "clue",
+        title: "Round 8",
+        code: "LOOKOUT",
+        clueText: {
+          logan: [
+            "Detectives sometimes climb instead,",
+            "The highest view reveals much more."
+          ],
+          carli: [
+            "Above the room where dreamers lay in bed,",
+            "The highest view reveals much more."
+          ],
+          gemmy: [
+            "Detectives sometimes climb instead,",
+            "Above the room where dreamers lay in bed,"
+          ]
+        }
+      },
+      {
+        type: "clue",
+        title: "Round 9",
+        code: "CRUSH",
+        clueText: {
+          logan: [
+            "This beverage case has spilled its guts,",
+            "Find the place where metal gets crushed."
+          ],
+          carli: [
+            "Empty cans now meet their crush,",
+            "Find the place where metal gets crushed."
+          ],
+          gemmy: [
+            "This beverage case has spilled its guts,",
+            "Empty cans now meet their crush,"
+          ]
+        }
+      },
+      {
+        type: "clue",
+        title: "Round 10",
+        code: "BEEP",
+        clueText: {
+          logan: [
+            "Where laughter once would swing and soar,",
+            "Use the tool that beeps for hidden ore."
+          ],
+          carli: [
+            "Something metallic sleeps below the floor,",
+            "Use the tool that beeps for hidden ore."
+          ],
+          gemmy: [
+            "Where laughter once would swing and soar,",
+            "Something metallic sleeps below the floor,"
+          ]
+        }
+      },
+      {
+        type: "clue",
+        title: "Round 11",
+        code: "CASECLOSED",
+        clueText: {
+          logan: [
+            "I stayed nearby and watched you roam,",
+            "Look where the night and embers meet."
+          ],
+          carli: [
+            "Where stories rise when flames are grown,",
+            "Look where the night and embers meet."
+          ],
+          gemmy: [
+            "I stayed nearby and watched you roam,",
+            "Where stories rise when flames are grown."
+          ]
+        }
+      }
+    ];
+
+    const agentNames = {
+      logan: "Agent Logan Rogan",
+      carli: "Agent Carli Jo Jo",
+      gemmy: "Agent Gemmy"
+    };
+
+    let selectedAgent = null;
+    let currentRound = 0;
+
+    const introView = document.getElementById("introView");
+    const lockView = document.getElementById("lockView");
+    const roundView = document.getElementById("roundView");
+    const victoryView = document.getElementById("victoryView");
+
+    const lockAgentName = document.getElementById("lockAgentName");
+    const roundEyebrow = document.getElementById("roundEyebrow");
+    const progressLabel = document.getElementById("progressLabel");
+    const progressFill = document.getElementById("progressFill");
+    const roundAgentName = document.getElementById("roundAgentName");
+    const clueLine1 = document.getElementById("clueLine1");
+    const clueLine2 = document.getElementById("clueLine2");
+    const roundStatus = document.getElementById("roundStatus");
+    const startStatus = document.getElementById("startStatus");
+    const puzzleText = document.getElementById("puzzleText");
+
+    const standardRound = document.getElementById("standardRound");
+    const numberPuzzleRound = document.getElementById("numberPuzzleRound");
+
+    function showView(view) {
+      introView.classList.add("hidden");
+      lockView.classList.add("hidden");
+      roundView.classList.add("hidden");
+      victoryView.classList.add("hidden");
+      view.classList.remove("hidden");
+    }
+
+    function resetMission() {
+      selectedAgent = null;
+      currentRound = 0;
+      document.getElementById("startCode").value = "";
+      document.getElementById("roundCodeInput").value = "";
+      document.getElementById("num1").value = "";
+      document.getElementById("num2").value = "";
+      document.getElementById("num3").value = "";
+      startStatus.textContent = "";
+      roundStatus.textContent = "";
+      showView(introView);
+    }
+
+    function renderRound() {
+      if (currentRound >= rounds.length) {
+        showView(victoryView);
+        return;
+      }
+
+      const round = rounds[currentRound];
+      showView(roundView);
+
+      roundEyebrow.textContent = round.title;
+      roundAgentName.textContent = agentNames[selectedAgent];
+      progressLabel.textContent = `Round ${currentRound + 1} of ${rounds.length}`;
+      progressFill.style.width = `${((currentRound + 1) / rounds.length) * 100}%`;
+      roundStatus.textContent = "";
+      document.getElementById("roundCodeInput").value = "";
+      document.getElementById("num1").value = "";
+      document.getElementById("num2").value = "";
+      document.getElementById("num3").value = "";
+
+      if (round.type === "puzzle") {
+        standardRound.classList.add("hidden");
+        numberPuzzleRound.classList.remove("hidden");
+        puzzleText.innerHTML = round.clueText[selectedAgent];
+      } else {
+        numberPuzzleRound.classList.add("hidden");
+        standardRound.classList.remove("hidden");
+        clueLine1.textContent = round.clueText[selectedAgent][0];
+        clueLine2.textContent = round.clueText[selectedAgent][1];
+      }
+    }
+
+    document.querySelectorAll(".agent-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        selectedAgent = btn.dataset.agent;
+        lockAgentName.innerHTML = `<strong>${agentNames[selectedAgent]}</strong>`;
+        document.getElementById("startCode").value = "";
+        startStatus.textContent = "";
+        showView(lockView);
+      });
+    });
+
+    document.getElementById("backToIntro").addEventListener("click", resetMission);
+    document.getElementById("resetMission").addEventListener("click", resetMission);
+    document.getElementById("playAgain").addEventListener("click", resetMission);
+
+    document.getElementById("startForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const entered = document.getElementById("startCode").value.trim().toUpperCase();
+      if (entered !== START_CODE) {
+        startStatus.textContent = "Authorization denied. Wait for the verbal start code.";
+        return;
+      }
+      currentRound = 0;
+      renderRound();
+    });
+
+    document.getElementById("roundCodeForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const entered = document.getElementById("roundCodeInput").value.trim().toUpperCase();
+      const expected = rounds[currentRound].code.toUpperCase();
+
+      if (entered !== expected) {
+        roundStatus.textContent = "Evidence rejected. Re-read the clue and inspect the location again.";
+        return;
+      }
+
+      roundStatus.innerHTML = '<span class="success">Evidence confirmed.</span>';
+      setTimeout(() => {
+        currentRound += 1;
+        renderRound();
+      }, 500);
+    });
+
+    document.getElementById("numberPuzzleForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const n1 = document.getElementById("num1").value.trim();
+      const n2 = document.getElementById("num2").value.trim();
+      const n3 = document.getElementById("num3").value.trim();
+
+      if (`${n1}|${n2}|${n3}` !== rounds[currentRound].code) {
+        roundStatus.textContent = "Not quite. Make sure the numbers are in alphabetical order of the agents.";
+        return;
+      }
+
+      roundStatus.innerHTML = '<span class="success">Numbers confirmed.</span>';
+      setTimeout(() => {
+        currentRound += 1;
+        renderRound();
+      }, 500);
+    });
+  </script>
+</body>
+</html>
